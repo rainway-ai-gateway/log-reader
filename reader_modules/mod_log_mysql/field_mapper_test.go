@@ -65,7 +65,7 @@ var ddlColumns = []string{
 // makeBfeLog builds a BfeLog with full request fields for mapper tests.
 func makeBfeLog() *bfe_access_pb.BfeLog {
 	logid := uint64(12345)
-	timestamp := uint64(1782353290)
+	timestamp := uint64(1782353290_000_000_000) // Unix 纳秒
 	product := bfe_access_pb.ProductID_BFE
 	logTag := "req_BFE"
 
@@ -361,7 +361,7 @@ func TestToRow_LogTime(t *testing.T) {
 	if !ok {
 		t.Fatalf("log_time should be time.Time, got %T", row[idx["log_time"]])
 	}
-	want := time.Unix(1782353290, 0) // local timezone, same as FROM_UNIXTIME
+	want := time.Unix(0, 1782353290_000_000_000) // local timezone; ns input -> sec DATETIME
 	if !v.Equal(want) {
 		t.Errorf("log_time = %v, want %v", v, want)
 	}
@@ -370,7 +370,7 @@ func TestToRow_LogTime(t *testing.T) {
 func TestToRow_NilRequestLog(t *testing.T) {
 	mapper := NewFieldMapper()
 	logid := uint64(1)
-	ts := uint64(100)
+	ts := uint64(100_000_000_000) // 100s，Unix 纳秒
 	bfeLog := &bfe_access_pb.BfeLog{
 		Logid:     &logid,
 		Timestamp: &ts,

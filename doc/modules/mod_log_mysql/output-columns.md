@@ -27,7 +27,7 @@
 | 列名 | 类型 | 来源 | 说明 |
 |------|------|------|------|
 | `hostid` | VARCHAR(256) | mod_fields 注入 | 主机标识，格式 `hostname_netns`；唯一键成员，NOT NULL |
-| `log_time` | DATETIME | `timestamp`（Unix 秒）转换 | 日志产生时间；唯一键成员，NOT NULL |
+| `log_time` | DATETIME | `timestamp`（Unix 纳秒）转换 | 日志产生时间；唯一键成员，NOT NULL |
 | `ai_apikey_id` | VARCHAR(256) | 同名列 | API Key 内部 ID（不记原始 key）；唯一键成员，允许 NULL（未认证请求空串→NULL） |
 | `ai_requested_model` | VARCHAR(128) | 同名列 | 客户端请求的模型名；唯一键成员，允许 NULL（空串→NULL） |
 | `logid` | BIGINT | 同名列 | BFE 请求唯一标识 |
@@ -187,7 +187,7 @@ proto v0.3.7/3.8/3.9 字段；列序与 ai-gateway-api 权威 DDL 明细表一�
 
 ### 4.2. log_time
 
-由 pb 的 `timestamp`（Unix 秒）在写入组装时转为 `DATETIME`；Doris 链路则由 Routine Load 的 `FROM_UNIXTIME(timestamp)` 完成，两链路同口径。
+由 pb 的 `timestamp`（Unix 纳秒）在写入组装时转为 `DATETIME`（按秒截断）；Doris 链路则由 Routine Load 的 `FROM_UNIXTIME(timestamp/1000000000)` 完成，两链路同口径。
 
 ### 4.3. pb 中已存在但本表未纳入的字段
 
@@ -215,7 +215,7 @@ KEY idx_status_time (res_status_code, log_time)
 | 列名/列数 | 99 列 | 同名同列，99 列 |
 | 复合列类型 | `ARRAY<STRUCT<...>>` / `ARRAY<VARCHAR>` | `JSON` |
 | 标签打平 | Routine Load `json_extract` 表达式 | 插件写时打平 |
-| log_time 生成 | Routine Load `FROM_UNIXTIME(timestamp)` | 插件写时转换 |
+| log_time 生成 | Routine Load `FROM_UNIXTIME(timestamp/1000000000)` | 插件写时转换 |
 | 幂等 | UNIQUE KEY 模型（同键覆盖） | 唯一键 + `ON DUPLICATE KEY UPDATE` |
 | 分区 | 动态分区（start=-7，日粒度） | RANGE 分区（查询侧 JOB 管理） |
 

@@ -40,7 +40,7 @@ import (
 // This is a package-local copy of the test helper (the shared one moved to mod_fields).
 func makeBfeLog() *bfe_access_pb.BfeLog {
 	logid := uint64(12345)
-	timestamp := uint64(1782353290)
+	timestamp := uint64(1782353290_000_000_000) // Unix 纳秒
 	product := bfe_access_pb.ProductID_BFE
 	logTag := "req_BFE"
 
@@ -137,8 +137,8 @@ func TestConvertBfeLogToJSON_DefaultFields(t *testing.T) {
 	if result["logid"].(float64) != 12345 {
 		t.Errorf("logid: expected 12345, got %v", result["logid"])
 	}
-	if result["timestamp"].(float64) != 1782353290 {
-		t.Errorf("timestamp: expected 1782353290, got %v", result["timestamp"])
+	if result["timestamp"].(float64) != 1782353290_000_000_000 {
+		t.Errorf("timestamp: expected 1782353290_000_000_000, got %v", result["timestamp"])
 	}
 	if result["product"] != "BFE" {
 		t.Errorf("product: expected BFE, got %v", result["product"])

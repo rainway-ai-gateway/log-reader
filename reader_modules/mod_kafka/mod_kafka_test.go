@@ -44,7 +44,7 @@ func TestModuleKafka_Update(t *testing.T) {
 	m.producer = &fakeProducer{}
 
 	logid := uint64(1)
-	ts := uint64(100)
+	ts := uint64(100_000_000_000) // 100s，Unix 纳秒
 	product := bfe_access_pb.ProductID_BFE
 	logs := []*bfe_access_pb.BfeLog{
 		{

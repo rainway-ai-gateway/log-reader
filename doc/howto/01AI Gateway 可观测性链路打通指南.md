@@ -176,7 +176,7 @@ LogReader 将 PB 日志转换为如下 JSON 格式发送到 Kafka：
 ```json
 {
     "logid": 10602749765076101032,
-    "timestamp": 1782353290,
+    "timestamp": 1782353290000000000,
     "product": "AI_product",
     "hostid": "bfe-node01_4026532708",
     "client_ip": "10.0.0.1",
@@ -226,7 +226,7 @@ LogReader 将 PB 日志转换为如下 JSON 格式发送到 Kafka：
 ```json
 {
     "logid": 8877700219231856663,
-    "timestamp": 1782353293,
+    "timestamp": 1782353293000000000,
     "product": "AI_product",
     "hostid": "bfe-node01_4026532708",
     "client_ip": "10.0.0.1",
@@ -270,7 +270,7 @@ LogReader 将 PB 日志转换为如下 JSON 格式发送到 Kafka：
 ```json
 {
     "logid": 12345678901234567890,
-    "timestamp": 1782353300,
+    "timestamp": 1782353300000000000,
     "product": "AI_product",
     "hostid": "bfe-node01_4026532708",
     "client_ip": "10.0.0.3",
@@ -478,7 +478,7 @@ CREATE ROUTINE LOAD bfe_ai_log_load ON bfe_ai_request_log
 COLUMNS(
     logid,
     timestamp,
-    log_time         = FROM_UNIXTIME(timestamp),
+    log_time         = FROM_UNIXTIME(timestamp/1000000000),
     product,
     hostid,
     client_ip,
@@ -541,7 +541,7 @@ FROM KAFKA (
 );
 ```
 
-> **关键列映射**：`log_time = FROM_UNIXTIME(timestamp)` 将 Kafka 中的 Unix 秒级时间戳转换为 DATETIME 类型。
+> **关键列映射**：`log_time = FROM_UNIXTIME(timestamp/1000000000)` 将 Kafka 中的 Unix 纳秒时间戳转换为 DATETIME 类型。
 
 ### 5.4. 聚合表 `bfe_ai_metrics_1m`（示例）
 

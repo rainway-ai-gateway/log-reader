@@ -8,7 +8,7 @@
 | 维度 | mod_log_mysql（写入侧权威，99 列） | mod_kafka（Kafka JSON 输出） | 是否对齐 |
 |------|-----------------------------------|------------------------------|----------|
 | 字段注册 | mapper 88 个直接字段全部经 `mod_fields.Extract` 取值 | 全部 88 字段均已注册（92 字段表） | ✅ |
-| 派生列 | `log_time`=timestamp→UTC 墙钟（driver 无 `loc` 参数默认 UTC 渲染）；`level1Name~level5` 写时打平 | 输出 `timestamp` epoch + `ai_apikeytags` 对象，由 Doris Routine Load 侧解析/打平（observability 已修 UTC 写入） | ✅（Doris 侧 2026-10-01 时区修复后） |
+| 派生列 | `log_time`=timestamp→UTC 墙钟（driver 无 `loc` 参数默认 UTC 渲染）；`level1Name~level5` 写时打平 | 输出 `timestamp` epoch（Unix 纳秒）+ `ai_apikeytags` 对象，由 Doris Routine Load 侧解析/打平（observability 已修 UTC 写入） | ✅（Doris 侧 2026-10-01 时区修复后） |
 | JSON/布尔列 | 空→NULL；bool→0/1 | 空→JSON null；bool→显式 0/1 | ✅ |
 | **Default 字段集** | 99 列**全量写入**，与字段注册无关 | `FieldMode=default`（observability 默认配置）只输出 **Default 集 74 字段**，18 个字段不输出 | ❌ **见 §1** |
 | **optional 三列零值** | `kindOptionalNum` 做 proto 指针判空：未设置→**NULL**（report.md 契约"null=未求值"） | extractor 对 unset 返回零值，`json_converter.go` 的 `isZero continue` 已注释（2026-08-26 起全字段输出）→ 输出显式 **0** | ❌ **见 §2** |

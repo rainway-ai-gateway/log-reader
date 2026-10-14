@@ -34,7 +34,7 @@
 | JSON 字段 | 类型 | Required | Default | 说明 |
 |-----------|------|----------|---------|------|
 | `logid` | uint64 | ✅ | ✅ | 请求唯一标识，BFE 为每个请求分配的唯一 ID |
-| `timestamp` | uint64 | ✅ | ✅ | 请求时间戳（Unix 秒） |
+| `timestamp` | uint64 | ✅ | ✅ | 请求时间戳（Unix 纳秒） |
 | `product` | string | ✅ | ✅ | 产品标识，优先取 `RequestLog.Product`，为空时取 `BfeLog.Product` |
 | `log_tag` | string | ❌ | ✅ | 日志分类标签，用于区分正常/错误日志 |
 | `hostid` | string | ✅ | ✅ | log reader 的hostid(由 hostname_netns 组成) |

@@ -81,7 +81,7 @@ func MakeRequestLog(logid uint64, product bfe_access_pb.ProductID, host, uri, mo
 	clientNetwork := bfe_access_pb.NetType_Ipv4
 	return &bfe_access_pb.BfeLog{
 		Logid:     &logid,
-		Timestamp: uint64Ptr(1782353290),
+		Timestamp: uint64Ptr(1782353290_000_000_000), // Unix 纳秒
 		Product:   &product,
 		LogType:   &logType,
 		LogTag:    strPtr("integration-test"),

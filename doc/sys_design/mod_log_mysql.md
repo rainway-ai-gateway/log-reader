@@ -73,7 +73,7 @@ connSupervisor: DOWN 期按 ConnectRetryIntervalMs 重试 Connect；
 | 幂等 | 唯一键四元组与 Doris UNIQUE KEY 完全一致；重发/重启/`-b` 补读均不产生重复行 |
 | 唯一键取舍 | 唯一键**不含 `logid`**：同一分钟内同 Key 同模型的多条请求只留一条（与 Doris 语义一致，以聚合可接受为前提） |
 | 零值规则 | 字符串空串 → NULL；数值/布尔原样（`ai_stream=0`、`ai_retry_count=0`）；nil/空 JSON → NULL |
-| 时间列 | `log_time` 由 pb `timestamp`（Unix 秒）写时转 DATETIME（Doris 链路为 Routine Load `FROM_UNIXTIME`，同口径） |
+| 时间列 | `log_time` 由 pb `timestamp`（Unix 纳秒）写时转 DATETIME（Doris 链路为 Routine Load `FROM_UNIXTIME(timestamp/1000000000)`，同口径） |
 | 标签打平 | `levelNName/levelN` 写时从 `ai_apikeytags` 对象打平；无标签 → NULL |
 
 ### 4.2 背压、重试与连接生命周期

@@ -32,7 +32,7 @@ import (
 
 const (
 	tableName = "bfe_ai_request_log"
-	testTS    = uint64(1782353290) // fixed timestamp from common.MakeRequestLog
+	testTS    = uint64(1782353290_000_000_000) // fixed Unix 纳秒 timestamp from common.MakeRequestLog
 )
 
 // testEnv holds all resources for a single LR03 integration test.
@@ -402,8 +402,8 @@ func TestLR03_BasicWrite(t *testing.T) {
 			t.Errorf("ai_intent_questions_version = %q, want v2026-09-27", r.aiIntentQuestionsVersion)
 		}
 
-		// log_time is the fixed timestamp (compared in UTC).
-		if got, want := r.logTime.UTC().Unix(), int64(testTS); got != want {
+		// log_time is the fixed timestamp truncated to seconds (compared in UTC).
+		if got, want := r.logTime.UTC().Unix(), int64(testTS)/1_000_000_000; got != want {
 			t.Errorf("log_time = %d (%v), want unix %d", got, r.logTime, want)
 		}
 	}

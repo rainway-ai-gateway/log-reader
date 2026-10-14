@@ -32,7 +32,7 @@ const (
 	kindBoolTiny                     // 布尔抽取值 -> TINYINT（false->0, true->1）
 	kindOptionalNum                  // proto optional 数值列：指针 nil -> NULL（未设置），非 nil -> 实际值
 	kindJSON                         // 结构化抽取值 json.Marshal 后写入；空 -> NULL
-	kindLogTime                      // timestamp（Unix 秒）-> time.Time（本地时区）
+	kindLogTime                      // timestamp（Unix 纳秒）-> time.Time（本地时区）
 	kindTagName                      // ai_apikeytags 打平：标签名
 	kindTagValue                     // ai_apikeytags 打平：标签值
 )
@@ -280,7 +280,9 @@ func (m *FieldMapper) ToRow(log *bfe_access_pb.BfeLog) ([]interface{}, error) {
 				row = append(row, nil)
 				continue
 			}
-			row = append(row, time.Unix(int64(ts), 0))
+			// bfe pb 的 timestamp 为 Unix 纳秒：time.Unix(0, ns) 与旧的
+			// time.Unix(sec, 0) 同为本地时区 Time，写库（秒级 DATETIME）口径不变。
+			row = append(row, time.Unix(0, int64(ts)))
 
 		case kindBoolTiny:
 			v, _ := mod_fields.Extract(col.field, log)

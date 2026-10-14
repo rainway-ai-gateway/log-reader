@@ -22,7 +22,7 @@ import (
 
 func makeBfeLog() *bfe_access_pb.BfeLog {
 	logid := uint64(12345)
-	timestamp := uint64(1782353290)
+	timestamp := uint64(1782353290_000_000_000) // Unix 纳秒
 	product := bfe_access_pb.ProductID_BFE
 	logTag := "req_BFE"
 
@@ -251,7 +251,7 @@ func TestFieldRegistry_Extract(t *testing.T) {
 		expected interface{}
 	}{
 		{"logid", uint64(12345)},
-		{"timestamp", uint64(1782353290)},
+		{"timestamp", uint64(1782353290_000_000_000)},
 		{"hostid", "TODO"},
 		{"product", "BFE"},
 		{"log_tag", "req_BFE"},
@@ -461,7 +461,7 @@ func TestFieldRegistry_ExtractZeroValues(t *testing.T) {
 
 func TestFieldRegistry_ExtractNilRequestLog(t *testing.T) {
 	logid := uint64(1)
-	ts := uint64(100)
+	ts := uint64(100_000_000_000) // 100s，Unix 纳秒
 	bfeLog := &bfe_access_pb.BfeLog{
 		Logid:     &logid,
 		Timestamp: &ts,
