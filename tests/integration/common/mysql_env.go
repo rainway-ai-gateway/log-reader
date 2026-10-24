@@ -39,13 +39,14 @@ import (
 //  2. testcontainers 启动 mysql:8.0 容器（需要本机 Docker 可用）；
 //  3. 两者都不可用则 t.Skip。
 type MysqlEnv struct {
-	t       *testing.T
-	db      *sql.DB // 已选中测试数据库的连接（parseTime=true&loc=UTC）
-	addr    string  // host:port，用于生成 log-reader 配置
-	user    string
-	passwd  string
-	dbName  string
-	cleanup func() // 结束时释放外部资源（drop 测试库 / 终止容器）
+	t         *testing.T
+	db        *sql.DB // 已选中测试数据库的连接（parseTime=true&loc=UTC）
+	addr      string  // host:port，用于生成 log-reader 配置
+	user      string
+	passwd    string
+	dbName    string
+	container testcontainers.Container // 仅 testcontainers 后端非空
+	cleanup   func()                   // 结束时释放外部资源（drop 测试库 / 终止容器）
 }
 
 // NewMysqlEnv 创建 MySQL 测试环境。
@@ -136,11 +137,12 @@ func newContainerMysqlEnv(t *testing.T, dbName string) (*MysqlEnv, error) {
 	}
 
 	env := &MysqlEnv{
-		t:      t,
-		addr:   cfg.Addr,
-		user:   cfg.User,
-		passwd: cfg.Passwd,
-		dbName: dbName,
+		t:         t,
+		addr:      cfg.Addr,
+		user:      cfg.User,
+		passwd:    cfg.Passwd,
+		dbName:    dbName,
+		container: container,
 	}
 	env.db = env.openTestDB(t)
 	env.cleanup = func() {
@@ -228,6 +230,43 @@ func (e *MysqlEnv) Close() {
 	if e.cleanup != nil {
 		e.cleanup()
 	}
+}
+
+// Pause 冻结 MySQL 容器进程，模拟 MySQL 不可达（新连接挂起）。
+// 仅 testcontainers 后端可用；外部 LR_MYSQL_DSN 后端调用即 skip。
+func (e *MysqlEnv) Pause(t *testing.T) {
+	t.Helper()
+	cli := e.pauseClient(t)
+	ctx := context.Background()
+	if err := cli.ContainerPause(ctx, e.container.GetContainerID()); err != nil {
+		t.Fatalf("pause mysql container failed: %v", err)
+	}
+}
+
+// Unpause 恢复被 Pause 的 MySQL 容器。
+// 仅 testcontainers 后端可用；外部 LR_MYSQL_DSN 后端调用即 skip。
+func (e *MysqlEnv) Unpause(t *testing.T) {
+	t.Helper()
+	cli := e.pauseClient(t)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	if err := cli.ContainerUnpause(ctx, e.container.GetContainerID()); err != nil {
+		t.Fatalf("unpause mysql container failed: %v", err)
+	}
+}
+
+// pauseClient 返回 docker client；非 testcontainers 后端（外部 DSN）调用即 skip
+func (e *MysqlEnv) pauseClient(t *testing.T) *client.Client {
+	t.Helper()
+	if e.container == nil {
+		t.Skip("Pause/Unpause requires testcontainers mysql (LR_MYSQL_DSN backend unsupported)")
+	}
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		t.Fatalf("create docker client failed: %v", err)
+	}
+	t.Cleanup(func() { cli.Close() })
+	return cli
 }
 
 // splitSQLStatements 按分号切分 SQL 脚本（去除 -- 行注释），供 ApplyDDL 逐条执行。

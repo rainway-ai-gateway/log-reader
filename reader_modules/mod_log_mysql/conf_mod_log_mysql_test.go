@@ -64,6 +64,18 @@ func TestConfModLogMysqlCheck_Defaults(t *testing.T) {
 	if cfg.Writer.MaxIdleConns != 5 {
 		t.Errorf("MaxIdleConns should default to 5, got %d", cfg.Writer.MaxIdleConns)
 	}
+	if cfg.Mysql.ConnectTimeoutMs != 3000 {
+		t.Errorf("ConnectTimeoutMs should default to 3000, got %d", cfg.Mysql.ConnectTimeoutMs)
+	}
+	if cfg.Mysql.ConnectRetryIntervalMs != 3000 {
+		t.Errorf("ConnectRetryIntervalMs should default to 3000, got %d", cfg.Mysql.ConnectRetryIntervalMs)
+	}
+	if cfg.Mysql.HealthPingIntervalMs != 0 {
+		t.Errorf("HealthPingIntervalMs should default to 0, got %d", cfg.Mysql.HealthPingIntervalMs)
+	}
+	if cfg.Writer.BatchTimeoutMs != 30000 {
+		t.Errorf("BatchTimeoutMs should default to 30000, got %d", cfg.Writer.BatchTimeoutMs)
+	}
 }
 
 func TestConfModLogMysqlCheck_EmptyAddr(t *testing.T) {
@@ -106,14 +118,20 @@ func TestConfModLogMysqlCheck_InvalidWriterValues(t *testing.T) {
 	cfg.Writer.MaxRetries = 0
 	cfg.Writer.MaxOpenConns = -5
 	cfg.Writer.MaxIdleConns = 0
+	cfg.Mysql.ConnectTimeoutMs = 0
+	cfg.Mysql.ConnectRetryIntervalMs = -1
+	cfg.Mysql.HealthPingIntervalMs = -5
+	cfg.Writer.BatchTimeoutMs = 0
 
 	if err := ConfModLogMysqlCheck(cfg); err != nil {
 		t.Fatalf("invalid writer values should be replaced by defaults, got error: %v", err)
 	}
 	if cfg.Writer.QueueSize != 2000 || cfg.Writer.BatchSize != 200 ||
 		cfg.Writer.FlushIntervalMs != 2000 || cfg.Writer.MaxRetries != 3 ||
-		cfg.Writer.MaxOpenConns != 10 || cfg.Writer.MaxIdleConns != 5 {
-		t.Errorf("invalid writer values not replaced by defaults: %+v", cfg.Writer)
+		cfg.Writer.MaxOpenConns != 10 || cfg.Writer.MaxIdleConns != 5 ||
+		cfg.Mysql.ConnectTimeoutMs != 3000 || cfg.Mysql.ConnectRetryIntervalMs != 3000 ||
+		cfg.Mysql.HealthPingIntervalMs != 0 || cfg.Writer.BatchTimeoutMs != 30000 {
+		t.Errorf("invalid values not replaced by defaults: %+v", cfg)
 	}
 }
 
@@ -128,6 +146,9 @@ User = report
 Password = secret123
 DBName = bfe_report
 Table = bfe_ai_request_log
+ConnectTimeoutMs = 1500
+ConnectRetryIntervalMs = 500
+HealthPingIntervalMs = 10000
 
 [Writer]
 QueueSize = 3000
@@ -136,6 +157,7 @@ FlushIntervalMs = 500
 MaxRetries = 5
 MaxOpenConns = 20
 MaxIdleConns = 8
+BatchTimeoutMs = 45000
 `
 	path := writeTempLogMysqlConf(t, content)
 	cfg, err := LoadConfig(path)
@@ -161,6 +183,15 @@ MaxIdleConns = 8
 	if cfg.Mysql.Table != "bfe_ai_request_log" {
 		t.Errorf("Table = %q", cfg.Mysql.Table)
 	}
+	if cfg.Mysql.ConnectTimeoutMs != 1500 {
+		t.Errorf("ConnectTimeoutMs = %d", cfg.Mysql.ConnectTimeoutMs)
+	}
+	if cfg.Mysql.ConnectRetryIntervalMs != 500 {
+		t.Errorf("ConnectRetryIntervalMs = %d", cfg.Mysql.ConnectRetryIntervalMs)
+	}
+	if cfg.Mysql.HealthPingIntervalMs != 10000 {
+		t.Errorf("HealthPingIntervalMs = %d", cfg.Mysql.HealthPingIntervalMs)
+	}
 	if cfg.Writer.QueueSize != 3000 {
 		t.Errorf("QueueSize = %d", cfg.Writer.QueueSize)
 	}
@@ -178,6 +209,9 @@ MaxIdleConns = 8
 	}
 	if cfg.Writer.MaxIdleConns != 8 {
 		t.Errorf("MaxIdleConns = %d", cfg.Writer.MaxIdleConns)
+	}
+	if cfg.Writer.BatchTimeoutMs != 45000 {
+		t.Errorf("BatchTimeoutMs = %d", cfg.Writer.BatchTimeoutMs)
 	}
 }
 

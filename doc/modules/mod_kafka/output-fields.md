@@ -36,7 +36,7 @@
 | `logid` | uint64 | ✅ | ✅ | 请求唯一标识，BFE 为每个请求分配的唯一 ID |
 | `timestamp` | uint64 | ✅ | ✅ | 请求时间戳（Unix 秒） |
 | `product` | string | ✅ | ✅ | 产品标识，优先取 `RequestLog.Product`，为空时取 `BfeLog.Product` |
-| `log_tag` | string | ❌ | ❌ | 日志分类标签，用于区分正常/错误日志 |
+| `log_tag` | string | ❌ | ✅ | 日志分类标签，用于区分正常/错误日志 |
 | `hostid` | string | ✅ | ✅ | log reader 的hostid(由 hostname_netns 组成) |
 
 ### 3.2. 客户端连接字段
@@ -44,10 +44,9 @@
 | JSON 字段 | 类型 | Required | Default | 说明 |
 |-----------|------|----------|---------|------|
 | `client_ip` | string | ✅ | ✅ | 客户端 IP 地址（IPv4 点分十进制或 IPv6 字符串） |
-| `client_ip6` | string | ✅ | ✅ | 客户端 IPv6 地址 |
-| `client_network` | string | ❌ | ❌ | 客户端网络类型（IPv4 / IPv6） |
-| `req_num` | uint32 | ❌ | ❌ | 连接上的请求序号 |
-| `session_id` | uint64 | ❌ | ❌ | 会话 ID |
+| `client_network` | string | ❌ | ✅ | 客户端网络类型（IPv4 / IPv6） |
+| `req_num` | uint32 | ❌ | ✅ | 连接上的请求序号 |
+| `session_id` | uint64 | ❌ | ✅ | 会话 ID |
 
 ### 3.3. 请求基础字段
 
@@ -68,26 +67,26 @@
 | `final_uri` | string | ❌ | ✅ | 最终路由后的 URI（经重写后） |
 | `method` | string | ✅ | ✅ | HTTP 方法（GET / POST / PUT / DELETE 等） |
 | `content_type` | string | ❌ | ✅ | 请求 Content-Type |
-| `referrer` | string | ❌ | ❌ | 请求 Referer |
-| `user_agent` | string | ❌ | ❌ | 请求 User-Agent |
+| `referrer` | string | ❌ | ✅ | 请求 Referer |
+| `user_agent` | string | ❌ | ✅ | 请求 User-Agent |
 | `x_forward_for` | string | ❌ | ✅ | X-Forwarded-For 头 |
 | `accept_language` | string | ❌ | ✅ | Accept-Language 头 |
 | `authorization` | string | ❌ | ✅ | Authorization 头 |
 | `transfer_encoding` | string | ❌ | ✅ | Transfer-Encoding 头 |
-| `delegation` | string | ❌ | ❌ | 委托标识 |
-| `uid` | string | ❌ | ❌ | 用户 ID |
+| `delegation` | string | ❌ | ✅ | 委托标识 |
+| `uid` | string | ❌ | ✅ | 用户 ID |
 
 ### 3.5. Cookie 字段
 
 | JSON 字段 | 类型 | Required | Default | 说明 |
 |-----------|------|----------|---------|------|
-| `cookie` | string | ❌ | ❌ | 请求 Cookie 原始字符串 |
+| `cookie` | string | ❌ | ✅ | 请求 Cookie 原始字符串 |
 
 ### 3.6. 请求头列表
 
 | JSON 字段 | 类型 | Required | Default | 说明 |
 |-----------|------|----------|---------|------|
-| `req_headers` | []object | ❌ | ❌ | 请求头列表，每项为 `{"key": "...", "value": "..."}` |
+| `req_headers` | []object | ❌ | ✅ | 请求头列表，每项为 `{"key": "...", "value": "..."}` |
 
 ### 3.7. 路由信息字段
 
@@ -106,14 +105,14 @@
 | `res_header_len` | uint32 | ✅ | ✅ | 响应头长度（字节） |
 | `res_body_len` | uint32 | ✅ | ✅ | 响应体长度（字节） |
 | `res_content_type` | string | ❌ | ✅ | 响应 Content-Type |
-| `res_location` | string | ❌ | ❌ | 响应 Location 头（重定向地址） |
-| `res_transfer_encoding` | string | ❌ | ❌ | 响应 Transfer-Encoding 头 |
+| `res_location` | string | ❌ | ✅ | 响应 Location 头（重定向地址） |
+| `res_transfer_encoding` | string | ❌ | ✅ | 响应 Transfer-Encoding 头 |
 
 ### 3.9. 响应头列表
 
 | JSON 字段 | 类型 | Required | Default | 说明 |
 |-----------|------|----------|---------|------|
-| `res_headers` | []object | ❌ | ❌ | 响应头列表，每项为 `{"key": "...", "value": "..."}` |
+| `res_headers` | []object | ❌ | ✅ | 响应头列表，每项为 `{"key": "...", "value": "..."}` |
 
 ### 3.10. 时间信息字段
 
@@ -124,7 +123,7 @@
 | `cluster_serve_time` | uint32 | ✅ | ✅ | 集群层处理耗时（毫秒） |
 | `backend_serve_time` | uint32 | ✅ | ✅ | 后端服务处理耗时（毫秒） |
 | `write_client_time` | uint32 | ✅ | ✅ | 写响应到客户端耗时（毫秒） |
-| `session_offset_time` | uint32 | ❌ | ❌ | 会话偏移时间（毫秒） |
+| `session_offset_time` | uint32 | ❌ | ✅ | 会话偏移时间（毫秒） |
 | `connect_backend_time` | uint32 | ❌ | ✅ | 连接后端耗时（毫秒） |
 | `proxy_delay_time` | uint32 | ✅ | ✅ | 代理延迟时间（毫秒） |
 
@@ -161,16 +160,26 @@
 | `ai_route_rule_hits` | []object | ❌ | ✅ | AI 路由规则命中记录 |
 | `ai_cluster_key_names` | []object | ❌ | ✅ | 尝试过的 cluster 与 key 名称组合 |
 | `ai_auth_hit_quota_plans` | []string | ❌ | ✅ | 成功请求时命中的配额计划名称列表 |
+| `ai_cache_status` | string | ❌ | ✅ | AI 缓存状态（如 `hit`/`miss`），未启用缓存时为空串 |
+| `ai_intent_question` | string | ❌ | ✅ | AI 意图识别命中的问题标识 |
+| `ai_intent_answer` | string | ❌ | ✅ | AI 意图识别选中的答案选项 |
+| `ai_intent_confidence` | float64 | ❌ | ✅ | 意图识别置信度（0~1）；proto optional，**未设置输出 null**（= 未求值，与 MySQL 侧 NULL 语义一致） |
+| `ai_intent_source` | string | ❌ | ✅ | 意图识别来源（如 `llm`、`rule`） |
+| `ai_intent_latency_us` | int64 | ❌ | ✅ | 意图识别耗时（微秒）；proto optional，**未设置输出 null**（= 未求值） |
+| `ai_intent_cache_hit` | bool | ❌ | ✅ | 意图答案是否命中意图缓存；proto optional，**未设置输出 null**（= 未求值） |
+| `ai_intent_questions_version` | string | ❌ | ✅ | 意图问题集版本 |
+| `mirror_hit` | bool | ❌ | ✅ | 请求是否命中流量镜像 |
+| `mirror_cluster` | string | ❌ | ✅ | 流量镜像目标集群名，未命中镜像时为空串 |
 
 ### 3.12. 地址信息字段（从 ConnAddrInfo 展平）
 
 | JSON 字段 | 类型 | Required | Default | 说明 |
 |-----------|------|----------|---------|------|
-| `bfe_ip` | string | ❌ | ❌ | BFE 实例 IP 地址 |
-| `sock_src_ip` | string | ❌ | ❌ | Socket 源 IP 地址 |
+| `bfe_ip` | string | ❌ | ✅ | BFE 实例 IP 地址 |
+| `sock_src_ip` | string | ❌ | ✅ | Socket 源 IP 地址 |
 | `is_trust_src_ip` | bool | ❌ | ✅ | 是否为可信源 IP |
-| `vip` | string | ❌ | ❌ | VIP 地址（IPv4） |
-| `vip6` | string | ❌ | ❌ | VIP 地址（IPv6） |
+| `vip` | string | ❌ | ✅ | VIP 地址（IPv4） |
+| `vip6` | string | ❌ | ✅ | VIP 地址（IPv6） |
 
 ---
 
@@ -178,19 +187,24 @@
 
 | 类别 | 字段数 | Required 数 | Default 数 |
 |------|--------|------------|------------|
-| BfeLog 顶层 | 4 | 3 | 3 |
-| 客户端连接 | 5 | 2 | 2 |
+| BfeLog 顶层 | 5 | 4 | 5 |
+| 客户端连接 | 4 | 1 | 4 |
 | 请求基础 | 4 | 4 | 4 |
-| 请求头 | 14 | 5 | 9 |
-| Cookie | 1 | 0 | 0 |
-| 请求头列表 | 1 | 0 | 0 |
+| 请求头 | 14 | 4 | 14 |
+| Cookie | 1 | 0 | 1 |
+| 请求头列表 | 1 | 0 | 1 |
 | 路由信息 | 4 | 0 | 4 |
-| 响应信息 | 6 | 3 | 4 |
-| 响应头列表 | 1 | 0 | 0 |
-| 时间信息 | 8 | 5 | 6 |
-| AI 可观测 | 29 | 0 | 29 |
-| 地址信息 | 5 | 0 | 1 |
-| **总计** | **82** | **22** | **62** |
+| 响应信息 | 6 | 3 | 6 |
+| 响应头列表 | 1 | 0 | 1 |
+| 时间信息 | 8 | 6 | 8 |
+| AI 可观测 | 39 | 0 | 39 |
+| 地址信息 | 5 | 0 | 5 |
+| **总计** | **92** | **22** | **92** |
+
+> Default 集 = 全部注册字段（2026-10-01 起）：`FieldMode=default` 的输出字段集与
+> `mod_log_mysql` 的写入字段集（派生列除外）完全对齐，见
+> `doc/modifications/2026-10-01-align-mod-kafka-output-with-mod-log-mysql/`。
+> 需要裁剪体积的部署可用 `customized` / `require` 模式。
 
 ---
 

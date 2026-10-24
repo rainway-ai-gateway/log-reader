@@ -57,6 +57,10 @@ type LogReaderConfigBuilder struct {
 	KafkaBroker   string
 	LogFilePath   string
 
+	// HttpPort optionally replaces {{HTTP_PORT}} in config.conf, for
+	// scenarios that poll the monitor endpoint and must pin the port up front.
+	HttpPort int
+
 	// MySQL connection placeholders, used by mod_log_mysql scenarios.
 	MysqlAddr     string
 	MysqlUser     string
@@ -80,6 +84,9 @@ func (b *LogReaderConfigBuilder) Build() error {
 		"{{MYSQL_USER}}":     b.MysqlUser,
 		"{{MYSQL_PASSWORD}}": b.MysqlPassword,
 		"{{MYSQL_DB}}":       b.MysqlDBName,
+	}
+	if b.HttpPort != 0 {
+		replacements["{{HTTP_PORT}}"] = fmt.Sprintf("%d", b.HttpPort)
 	}
 
 	if err := replacePlaceholders(b.TargetConfDir, replacements); err != nil {

@@ -197,6 +197,11 @@ func isZeroInt64(v interface{}) bool {
 	return !ok || n == 0
 }
 
+func isZeroFloat64(v interface{}) bool {
+	n, ok := v.(float64)
+	return !ok || n == 0
+}
+
 func isZeroBool(v interface{}) bool {
 	b, ok := v.(bool)
 	return !ok || !b
@@ -251,7 +256,7 @@ func registerAllFields() {
 		func(bfeLog *bfe_access_pb.BfeLog) interface{} { return reader_util.GetHostId() },
 		isZeroString,
 	)
-	registerField("log_tag", "string", false, false,
+	registerField("log_tag", "string", false, true,
 		func(bfeLog *bfe_access_pb.BfeLog) interface{} { return bfeLog.GetLogTag() },
 		isZeroString,
 	)
@@ -270,7 +275,7 @@ func registerAllFields() {
 		},
 		isZeroString,
 	)
-	registerField("client_network", "string", false, false,
+	registerField("client_network", "string", false, true,
 		func(bfeLog *bfe_access_pb.BfeLog) interface{} {
 			if reqLog := bfeLog.GetRequestLog(); reqLog != nil {
 				if reqLog.ClientNetwork != nil {
@@ -281,7 +286,7 @@ func registerAllFields() {
 		},
 		isZeroString,
 	)
-	registerField("req_num", "uint32", false, false,
+	registerField("req_num", "uint32", false, true,
 		func(bfeLog *bfe_access_pb.BfeLog) interface{} {
 			if reqLog := bfeLog.GetRequestLog(); reqLog != nil {
 				return reqLog.GetReqNum()
@@ -290,7 +295,7 @@ func registerAllFields() {
 		},
 		isZeroUint32,
 	)
-	registerField("session_id", "uint64", false, false,
+	registerField("session_id", "uint64", false, true,
 		func(bfeLog *bfe_access_pb.BfeLog) interface{} {
 			if reqLog := bfeLog.GetRequestLog(); reqLog != nil {
 				return reqLog.GetSessionId()
@@ -393,7 +398,7 @@ func registerAllFields() {
 		},
 		isZeroString,
 	)
-	registerField("referrer", "string", false, false,
+	registerField("referrer", "string", false, true,
 		func(bfeLog *bfe_access_pb.BfeLog) interface{} {
 			if reqLog := bfeLog.GetRequestLog(); reqLog != nil {
 				return reqLog.GetReferrer()
@@ -402,7 +407,7 @@ func registerAllFields() {
 		},
 		isZeroString,
 	)
-	registerField("user_agent", "string", false, false,
+	registerField("user_agent", "string", false, true,
 		func(bfeLog *bfe_access_pb.BfeLog) interface{} {
 			if reqLog := bfeLog.GetRequestLog(); reqLog != nil {
 				return reqLog.GetUserAgent()
@@ -447,7 +452,7 @@ func registerAllFields() {
 		},
 		isZeroString,
 	)
-	registerField("delegation", "string", false, false,
+	registerField("delegation", "string", false, true,
 		func(bfeLog *bfe_access_pb.BfeLog) interface{} {
 			if reqLog := bfeLog.GetRequestLog(); reqLog != nil {
 				return reqLog.GetDelegation()
@@ -456,7 +461,7 @@ func registerAllFields() {
 		},
 		isZeroString,
 	)
-	registerField("uid", "string", false, false,
+	registerField("uid", "string", false, true,
 		func(bfeLog *bfe_access_pb.BfeLog) interface{} {
 			if reqLog := bfeLog.GetRequestLog(); reqLog != nil {
 				return reqLog.GetUid()
@@ -467,7 +472,7 @@ func registerAllFields() {
 	)
 
 	// === Cookie fields ===
-	registerField("cookie", "string", false, false,
+	registerField("cookie", "string", false, true,
 		func(bfeLog *bfe_access_pb.BfeLog) interface{} {
 			if reqLog := bfeLog.GetRequestLog(); reqLog != nil {
 				return reqLog.GetCookie()
@@ -478,7 +483,7 @@ func registerAllFields() {
 	)
 
 	// === Request headers list ===
-	registerField("req_headers", "[]object", false, false,
+	registerField("req_headers", "[]object", false, true,
 		func(bfeLog *bfe_access_pb.BfeLog) interface{} {
 			if reqLog := bfeLog.GetRequestLog(); reqLog != nil {
 				headers := reqLog.GetReqHeaders()
@@ -573,7 +578,7 @@ func registerAllFields() {
 		},
 		isZeroString,
 	)
-	registerField("res_location", "string", false, false,
+	registerField("res_location", "string", false, true,
 		func(bfeLog *bfe_access_pb.BfeLog) interface{} {
 			if reqLog := bfeLog.GetRequestLog(); reqLog != nil {
 				return reqLog.GetResLocation()
@@ -582,7 +587,7 @@ func registerAllFields() {
 		},
 		isZeroString,
 	)
-	registerField("res_transfer_encoding", "string", false, false,
+	registerField("res_transfer_encoding", "string", false, true,
 		func(bfeLog *bfe_access_pb.BfeLog) interface{} {
 			if reqLog := bfeLog.GetRequestLog(); reqLog != nil {
 				return reqLog.GetResTransferEncoding()
@@ -593,7 +598,7 @@ func registerAllFields() {
 	)
 
 	// === Response headers list ===
-	registerField("res_headers", "[]object", false, false,
+	registerField("res_headers", "[]object", false, true,
 		func(bfeLog *bfe_access_pb.BfeLog) interface{} {
 			if reqLog := bfeLog.GetRequestLog(); reqLog != nil {
 				headers := reqLog.GetResHeaders()
@@ -657,7 +662,7 @@ func registerAllFields() {
 		},
 		isZeroUint32,
 	)
-	registerField("session_offset_time", "uint32", false, false,
+	registerField("session_offset_time", "uint32", false, true,
 		func(bfeLog *bfe_access_pb.BfeLog) interface{} {
 			if reqLog := bfeLog.GetRequestLog(); reqLog != nil {
 				return reqLog.GetSessionOffsetTime()
@@ -999,8 +1004,102 @@ func registerAllFields() {
 		isZeroSlice,
 	)
 
+	// === AI cache / traffic mirroring / AI intent fields (v0.3.7/3.8/3.9) ===
+	registerField("ai_cache_status", "string", false, true,
+		func(bfeLog *bfe_access_pb.BfeLog) interface{} {
+			if reqLog := bfeLog.GetRequestLog(); reqLog != nil {
+				return reqLog.GetAiCacheStatus()
+			}
+			return ""
+		},
+		isZeroString,
+	)
+	registerField("ai_intent_question", "string", false, true,
+		func(bfeLog *bfe_access_pb.BfeLog) interface{} {
+			if reqLog := bfeLog.GetRequestLog(); reqLog != nil {
+				return reqLog.GetAiIntentQuestion()
+			}
+			return ""
+		},
+		isZeroString,
+	)
+	registerField("ai_intent_answer", "string", false, true,
+		func(bfeLog *bfe_access_pb.BfeLog) interface{} {
+			if reqLog := bfeLog.GetRequestLog(); reqLog != nil {
+				return reqLog.GetAiIntentAnswer()
+			}
+			return ""
+		},
+		isZeroString,
+	)
+	registerField("ai_intent_confidence", "float64", false, true,
+		func(bfeLog *bfe_access_pb.BfeLog) interface{} {
+			// proto optional 指针判空：未设置返回 nil（JSON null），
+			// 与 mod_log_mysql kindOptionalNum 的 NULL=未求值语义对齐。
+			if reqLog := bfeLog.GetRequestLog(); reqLog != nil && reqLog.AiIntentConfidence != nil {
+				return *reqLog.AiIntentConfidence
+			}
+			return nil
+		},
+		isZeroFloat64,
+	)
+	registerField("ai_intent_source", "string", false, true,
+		func(bfeLog *bfe_access_pb.BfeLog) interface{} {
+			if reqLog := bfeLog.GetRequestLog(); reqLog != nil {
+				return reqLog.GetAiIntentSource()
+			}
+			return ""
+		},
+		isZeroString,
+	)
+	registerField("ai_intent_latency_us", "int64", false, true,
+		func(bfeLog *bfe_access_pb.BfeLog) interface{} {
+			if reqLog := bfeLog.GetRequestLog(); reqLog != nil && reqLog.AiIntentLatencyUs != nil {
+				return *reqLog.AiIntentLatencyUs
+			}
+			return nil
+		},
+		isZeroInt64,
+	)
+	registerField("ai_intent_cache_hit", "bool", false, true,
+		func(bfeLog *bfe_access_pb.BfeLog) interface{} {
+			if reqLog := bfeLog.GetRequestLog(); reqLog != nil && reqLog.AiIntentCacheHit != nil {
+				return *reqLog.AiIntentCacheHit
+			}
+			return nil
+		},
+		isZeroBool,
+	)
+	registerField("ai_intent_questions_version", "string", false, true,
+		func(bfeLog *bfe_access_pb.BfeLog) interface{} {
+			if reqLog := bfeLog.GetRequestLog(); reqLog != nil {
+				return reqLog.GetAiIntentQuestionsVersion()
+			}
+			return ""
+		},
+		isZeroString,
+	)
+	registerField("mirror_hit", "bool", false, true,
+		func(bfeLog *bfe_access_pb.BfeLog) interface{} {
+			if reqLog := bfeLog.GetRequestLog(); reqLog != nil {
+				return reqLog.GetMirrorHit()
+			}
+			return false
+		},
+		isZeroBool,
+	)
+	registerField("mirror_cluster", "string", false, true,
+		func(bfeLog *bfe_access_pb.BfeLog) interface{} {
+			if reqLog := bfeLog.GetRequestLog(); reqLog != nil {
+				return reqLog.GetMirrorCluster()
+			}
+			return ""
+		},
+		isZeroString,
+	)
+
 	// === Address info fields (flattened from ConnAddrInfo) ===
-	registerField("bfe_ip", "string", false, false,
+	registerField("bfe_ip", "string", false, true,
 		func(bfeLog *bfe_access_pb.BfeLog) interface{} {
 			if reqLog := bfeLog.GetRequestLog(); reqLog != nil {
 				if addr := reqLog.GetAddrInfo(); addr != nil {
@@ -1011,7 +1110,7 @@ func registerAllFields() {
 		},
 		isZeroString,
 	)
-	registerField("sock_src_ip", "string", false, false,
+	registerField("sock_src_ip", "string", false, true,
 		func(bfeLog *bfe_access_pb.BfeLog) interface{} {
 			if reqLog := bfeLog.GetRequestLog(); reqLog != nil {
 				if addr := reqLog.GetAddrInfo(); addr != nil {
@@ -1033,7 +1132,7 @@ func registerAllFields() {
 		},
 		isZeroBool,
 	)
-	registerField("vip", "string", false, false,
+	registerField("vip", "string", false, true,
 		func(bfeLog *bfe_access_pb.BfeLog) interface{} {
 			if reqLog := bfeLog.GetRequestLog(); reqLog != nil {
 				if addr := reqLog.GetAddrInfo(); addr != nil {
@@ -1044,7 +1143,7 @@ func registerAllFields() {
 		},
 		isZeroString,
 	)
-	registerField("vip6", "string", false, false,
+	registerField("vip6", "string", false, true,
 		func(bfeLog *bfe_access_pb.BfeLog) interface{} {
 			if reqLog := bfeLog.GetRequestLog(); reqLog != nil {
 				if addr := reqLog.GetAddrInfo(); addr != nil {

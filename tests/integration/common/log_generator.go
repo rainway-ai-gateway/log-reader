@@ -204,6 +204,18 @@ func MakeRequestLog(logid uint64, product bfe_access_pb.ProductID, host, uri, mo
 				},
 			},
 			AiAuthHitQuotaPlans: []string{"hit-plan-A", "hit-plan-B"},
+
+			// AI cache / traffic mirroring / AI intent fields (v0.3.7/3.8/3.9).
+			AiCacheStatus:            strPtr("hit"),
+			MirrorHit:                boolPtr(true),
+			MirrorCluster:            strPtr("mirror-cluster-A"),
+			AiIntentQuestion:         strPtr("intent-q-001"),
+			AiIntentAnswer:           strPtr("intent-a-1"),
+			AiIntentConfidence:       float64Ptr(0.95),
+			AiIntentSource:           strPtr("llm"),
+			AiIntentLatencyUs:        int64Ptr(1234),
+			AiIntentCacheHit:         boolPtr(true),
+			AiIntentQuestionsVersion: strPtr("v2026-09-27"),
 		},
 	}
 }
@@ -214,3 +226,6 @@ func uint32Ptr(v uint32) *uint32 { return &v }
 func uint64Ptr(v uint64) *uint64 { return &v }
 func int64Ptr(v int64) *int64    { return &v }
 func int32Ptr(v int32) *int32    { return &v }
+func float64Ptr(v float64) *float64 {
+	return &v
+}

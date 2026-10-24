@@ -1,11 +1,12 @@
 -- ============================================================================
 -- bfe_ai_request_log 建表语句（LR03 集成测试内嵌副本）
 --
--- 权威 DDL 归 ai-gateway-api 仓库 db_ddl_report_mysql.sql（见变更文档
--- doc/modifications/2026-09-15-add-mod-log-mysql-plugin/design-changes.md §5），
--- 该权威文件发布后本副本应以它为基准重新生成。
--- 当前副本列清单/列序/类型以 reader_modules/mod_log_mysql/field_mapper.go
--- 的 89 列为准（与其保持一致），并有三处测试化调整（权威 DDL 发布时必须同样处理）：
+-- 权威 DDL 归 ai-gateway-api 仓库 db_ddl_report_mysql.sql 明细表（2026-09-27
+-- 99 列版，含 ai-cache/流量镜像/ai-intent 10 新列；2026-10-13 起基准另含
+-- bfenetworks/bfe#1417：uk_dedup 为五列、logid 收紧为 NOT NULL DEFAULT 0），
+-- 本副本以其为基准重新生成，权威 DDL 后续变更时应同步重新生成。
+-- 列清单/列序/类型与权威 DDL 明细表保持一致，并有三处测试化调整（权威 DDL
+-- 变更时必须同样处理）：
 -- 1. 长文本列（origin_uri/final_uri/x_forward_for/authorization/referrer/
 --    user_agent/cookie/res_location）使用 TEXT 而非 VARCHAR——utf8mb4 下
 --    VARCHAR 长度总和超过 MySQL 65535 字节行上限（Error 1118）；
@@ -23,7 +24,9 @@ CREATE TABLE IF NOT EXISTS bfe_ai_request_log (
     log_time                DATETIME      NOT NULL,
     ai_apikey_id            VARCHAR(256)  DEFAULT NULL,
     ai_requested_model      VARCHAR(128)  DEFAULT NULL,
-    logid                   BIGINT        DEFAULT NULL,
+    -- logid：BFE 逐请求唯一标识（非 0）。NOT NULL DEFAULT 0 而非可空：MySQL 唯一键
+    -- 视 NULL 互不相等，可空会让缺 id 的行逃出全部去重（同一行重放插入重复行）。
+    logid                   BIGINT        NOT NULL DEFAULT 0,
     product                 VARCHAR(64)   DEFAULT NULL,
     log_tag                 VARCHAR(64)   DEFAULT NULL,
     -- 客户端连接
@@ -116,8 +119,22 @@ CREATE TABLE IF NOT EXISTS bfe_ai_request_log (
     ai_auth_reject_reason   VARCHAR(256)  DEFAULT NULL,
     ai_auth_reject_quota_plans JSON       DEFAULT NULL,
     ai_auth_hit_quota_plans JSON          DEFAULT NULL,
-    -- 幂等键：同键冲突覆盖（log-reader 重发/-b 补读安全）
-    UNIQUE KEY uk_dedup (hostid, log_time, ai_apikey_id, ai_requested_model),
+    -- AI 缓存/镜像/意图（2026-09-27 加列，proto v0.3.7/3.8/3.9 字段；列序与
+    -- ai-gateway-api 权威 DDL 明细表一致；ai_cache_key、mirror_status~mirror_error
+    -- 不进报表库：前者 debug 专用防膨胀，后者走 Prometheus 不回写日志）
+    ai_cache_status         VARCHAR(16)   NOT NULL DEFAULT '',
+    mirror_hit              TINYINT       NOT NULL DEFAULT 0,
+    mirror_cluster          VARCHAR(128)  NOT NULL DEFAULT '',
+    ai_intent_question      VARCHAR(64)   NOT NULL DEFAULT '',
+    ai_intent_answer        VARCHAR(64)   NOT NULL DEFAULT '',
+    ai_intent_confidence    DOUBLE        DEFAULT NULL,
+    ai_intent_source        VARCHAR(32)   NOT NULL DEFAULT '',
+    ai_intent_latency_us    BIGINT        DEFAULT NULL,
+    ai_intent_cache_hit     TINYINT       DEFAULT NULL,
+    ai_intent_questions_version VARCHAR(32) NOT NULL DEFAULT '',
+    -- 幂等键：含请求级判别列 logid（bfenetworks/bfe#1417）——同秒同 Key 同模型的
+    -- 并发请求各自成行；只有同一请求重放（同 logid）才命中覆盖（重发/-b 补读仍安全）
+    UNIQUE KEY uk_dedup (hostid, log_time, ai_apikey_id, ai_requested_model, logid),
     KEY idx_model_time (ai_target_model, log_time),
     KEY idx_apikey_time (ai_apikey_id, log_time),
     KEY idx_provider_time (ai_provider, log_time),

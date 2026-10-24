@@ -57,6 +57,7 @@ LR01 基本流程与 JSON 转换正确性
 - 消息包含所有注册字段，例如：
   - 常用字段：`logid`、`timestamp`、`product`、`header_host`、`origin_uri`、`ai_requested_model`；
   - 不常用字段：`log_tag`、`client_network`、`req_num`、`session_id`、`referrer`、`user_agent`、`delegation`、`uid`、`cookie`、`req_headers`、`res_location`、`res_transfer_encoding`、`res_headers`、`session_offset_time`、`bfe_ip`、`sock_src_ip`、`vip` 等。
+- 对齐改造（2026-10-01）后 Default 集已扩至全部 92 个注册字段，与 All 集字段名集合一致（两者仅模式语义不同）；`ai_intent_confidence` / `ai_intent_latency_us` / `ai_intent_cache_hit` 未设置时输出 JSON `null`。
 - `logid = 50001`，`ai_requested_model = "all-model"`。
 
 ## 清理

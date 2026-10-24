@@ -32,11 +32,14 @@ type ConfModLogMysql struct {
 
 // ConfMysql MySQL 连接配置
 type ConfMysql struct {
-	Addr     string // MySQL 地址，如 127.0.0.1:3306
-	User     string // 用户名（专用最小权限账号）
-	Password string // 密码
-	DBName   string // 目标库名
-	Table    string // 目标表名
+	Addr                   string // MySQL 地址，如 127.0.0.1:3306
+	User                   string // 用户名（专用最小权限账号）
+	Password               string // 密码
+	DBName                 string // 目标库名
+	Table                  string // 目标表名
+	ConnectTimeoutMs       int    // 单次 connect/ping 超时（毫秒）
+	ConnectRetryIntervalMs int    // 建连重试间隔（毫秒），启动未连通时后台重试
+	HealthPingIntervalMs   int    // UP 期健康探活间隔（毫秒），0 = 关闭；探活失败触发断连重连
 }
 
 // ConfLogMysqlWriter 批量写入配置
@@ -47,6 +50,7 @@ type ConfLogMysqlWriter struct {
 	MaxRetries      int // 写失败重试次数
 	MaxOpenConns    int // 连接池最大打开连接数
 	MaxIdleConns    int // 连接池最大空闲连接数
+	BatchTimeoutMs  int // 单批事务执行超时（毫秒），ExecContext ctx 与驱动 writeTimeout
 }
 
 // ModLogMysqlBasic 基础配置
@@ -89,6 +93,21 @@ func ConfModLogMysqlCheck(cfg *ConfModLogMysql) error {
 		return fmt.Errorf("Mysql.Table is empty")
 	}
 
+	if cfg.Mysql.ConnectTimeoutMs <= 0 {
+		log.Logger.Warn("mod_log_mysql: Mysql.ConnectTimeoutMs[%d] <= 0, use default value(3000)", cfg.Mysql.ConnectTimeoutMs)
+		cfg.Mysql.ConnectTimeoutMs = 3000
+	}
+
+	if cfg.Mysql.ConnectRetryIntervalMs <= 0 {
+		log.Logger.Warn("mod_log_mysql: Mysql.ConnectRetryIntervalMs[%d] <= 0, use default value(3000)", cfg.Mysql.ConnectRetryIntervalMs)
+		cfg.Mysql.ConnectRetryIntervalMs = 3000
+	}
+
+	if cfg.Mysql.HealthPingIntervalMs < 0 {
+		log.Logger.Warn("mod_log_mysql: Mysql.HealthPingIntervalMs[%d] < 0, use default value(0, disabled)", cfg.Mysql.HealthPingIntervalMs)
+		cfg.Mysql.HealthPingIntervalMs = 0
+	}
+
 	if cfg.Writer.QueueSize <= 0 {
 		log.Logger.Warn("mod_log_mysql: Writer.QueueSize[%d] <= 0, use default value(2000)", cfg.Writer.QueueSize)
 		cfg.Writer.QueueSize = 2000
@@ -117,6 +136,11 @@ func ConfModLogMysqlCheck(cfg *ConfModLogMysql) error {
 	if cfg.Writer.MaxIdleConns <= 0 {
 		log.Logger.Warn("mod_log_mysql: Writer.MaxIdleConns[%d] <= 0, use default value(5)", cfg.Writer.MaxIdleConns)
 		cfg.Writer.MaxIdleConns = 5
+	}
+
+	if cfg.Writer.BatchTimeoutMs <= 0 {
+		log.Logger.Warn("mod_log_mysql: Writer.BatchTimeoutMs[%d] <= 0, use default value(30000)", cfg.Writer.BatchTimeoutMs)
+		cfg.Writer.BatchTimeoutMs = 30000
 	}
 
 	return nil

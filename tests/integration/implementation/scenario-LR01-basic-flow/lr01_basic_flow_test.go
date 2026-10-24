@@ -498,17 +498,71 @@ func TestLR01_DefaultFieldMode(t *testing.T) {
 		"res_status_code", "res_header_len", "res_body_len",
 		"all_time", "read_client_time", "cluster_serve_time", "backend_serve_time", "write_client_time",
 	}
-	for _, f := range expectedFields {
+	// Aligned with mod_log_mysql write columns (2026-10-01): these 18 fields
+	// were promoted from non-default to the default set.
+	alignedFields := []string{
+		"log_tag", "client_network", "req_num", "session_id",
+		"referrer", "user_agent", "delegation", "uid", "cookie", "req_headers",
+		"res_location", "res_transfer_encoding", "res_headers",
+		"session_offset_time", "bfe_ip", "sock_src_ip", "vip", "vip6",
+	}
+	for _, f := range append(expectedFields, alignedFields...) {
 		if _, ok := payload[f]; !ok {
 			t.Errorf("default mode missing field %q", f)
 		}
 	}
+
+	// MakeRequestLog sets the intent fields (0.95/1234/true), so in default
+	// mode they must appear with real values (not null).
+	assertFieldEquals(t, payload, "ai_intent_confidence", 0.95)
+	assertFieldEquals(t, payload, "ai_intent_latency_us", float64(1234))
+	assertFieldEquals(t, payload, "ai_intent_cache_hit", true)
 
 	// Verify a few values.
 	assertFieldEquals(t, payload, "logid", float64(40001))
 	assertFieldEquals(t, payload, "header_host", "default.example.org")
 	assertFieldEquals(t, payload, "origin_uri", "/v1/chat")
 	assertFieldEquals(t, payload, "ai_requested_model", "default-model")
+}
+
+func TestLR01_OptionalIntentFieldsUnsetNull(t *testing.T) {
+	e := newTestEnv(t, "customized", []string{
+		"ai_intent_confidence", "ai_intent_latency_us", "ai_intent_cache_hit",
+	})
+	defer e.Close()
+
+	// Log 1: intent fields unset (nil pointers) -> JSON null.
+	logUnset := common.MakeRequestLog(80001, bfe_access_pb.ProductID_BFE, "intent-unset.example.org", "/v1/chat", "unset-model")
+	reqUnset := logUnset.GetRequestLog()
+	reqUnset.AiIntentConfidence = nil
+	reqUnset.AiIntentLatencyUs = nil
+	reqUnset.AiIntentCacheHit = nil
+
+	// Log 2: intent fields set -> original values.
+	logSet := common.MakeRequestLog(80002, bfe_access_pb.ProductID_BFE, "intent-set.example.org", "/v1/chat", "set-model")
+
+	e.logGen.MustWriteBfeLog(t, logUnset)
+	e.logGen.MustWriteBfeLog(t, logSet)
+
+	msgs := e.assertMessagesReceived(2, 10*time.Second)
+
+	// Message order matches write order.
+	payloadUnset := parseJSON(t, msgs[0])
+	for _, f := range []string{"ai_intent_confidence", "ai_intent_latency_us", "ai_intent_cache_hit"} {
+		got, ok := payloadUnset[f]
+		if !ok {
+			t.Errorf("unset log missing field %q", f)
+			continue
+		}
+		if got != nil {
+			t.Errorf("unset log field %q = %v (%T), want JSON null", f, got, got)
+		}
+	}
+
+	payloadSet := parseJSON(t, msgs[1])
+	assertFieldEquals(t, payloadSet, "ai_intent_confidence", 0.95)
+	assertFieldEquals(t, payloadSet, "ai_intent_latency_us", float64(1234))
+	assertFieldEquals(t, payloadSet, "ai_intent_cache_hit", true)
 }
 
 func TestLR01_AllFieldMode(t *testing.T) {

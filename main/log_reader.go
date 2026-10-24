@@ -33,7 +33,11 @@ import (
 )
 
 var (
+	// version is injected at build time via
+	// -ldflags "-X main.version=$(LOG_READER_VERSION)" (see Makefile).
+	version   string
 	help      *bool   = flag.Bool("h", false, "to show help")
+	showVer   *bool   = flag.Bool("v", false, "to show version")
 	confRoot  *string = flag.String("c", "../conf", "root path of config file")
 	logPath   *string = flag.String("l", "../log", "dir path of log")
 	stdOut    *bool   = flag.Bool("s", false, "to show log in stdout")
@@ -41,6 +45,13 @@ var (
 	autoBns   *bool   = flag.Bool("a", false, "automatically get name of bfe cluster")
 	fromBegin *bool   = flag.Bool("b", false, "is read from begin")
 )
+
+func init() {
+	// version is empty when built without the ldflags above
+	if version == "" {
+		version = "debug"
+	}
+}
 
 func Exit(code int) {
 	// Close all modules first
@@ -67,6 +78,10 @@ func main() {
 		flag.PrintDefaults()
 		return
 	}
+	if *showVer {
+		fmt.Printf("version %s\n", version)
+		return
+	}
 
 	// debug switch
 	if *debugLog {
@@ -91,7 +106,7 @@ func main() {
 		Exit(1)
 	}
 
-	log.Logger.Info("log-reader start")
+	log.Logger.Info("log-reader start, version:%s", version)
 
 	// load config
 	confPath := path.Join(*confRoot, "config.conf")
@@ -108,7 +123,7 @@ func main() {
 	reader_modules.SetModules()
 
 	// 1. create bfeLogReader
-	bfeLogReader, err := bfe_log_reader.NewBfeLogReader(&config, "")
+	bfeLogReader, err := bfe_log_reader.NewBfeLogReader(&config, version)
 	if err != nil {
 		log.Logger.Error("main():err in NewBfeLogReader():%s", err.Error())
 		Exit(1)

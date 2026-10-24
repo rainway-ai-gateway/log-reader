@@ -94,10 +94,31 @@ func (p *ProcessEnv) Build() {
 // StartLogReader starts the log-reader process with the given config and log directories.
 // It returns the monitor port and a stop function.
 func (p *ProcessEnv) StartLogReader(confDir, logDir string) (int, func()) {
+	port, stop, _ := p.startLogReader(confDir, logDir, FreePort(p.t))
+	return port, stop
+}
+
+// StartLogReaderEx is StartLogReader plus a waitExit probe for scenarios that
+// assert on process lifetime:
+//   - waitExit(timeout) reports whether the process exited within timeout and
+//     its exit code (-1 when still running or on abnormal termination).
+//
+// The returned stop function is safe to call after waitExit observed an exit.
+func (p *ProcessEnv) StartLogReaderEx(confDir, logDir string) (int, func(), func(time.Duration) (bool, int)) {
+	return p.startLogReader(confDir, logDir, FreePort(p.t))
+}
+
+// StartLogReaderOnPort is StartLogReaderEx pinned to a caller-chosen monitor
+// port, for scenarios that must know the port before building the config
+// (e.g. LR04 polls /monitor while the process is running).
+func (p *ProcessEnv) StartLogReaderOnPort(confDir, logDir string, monitorPort int) (func(), func(time.Duration) (bool, int)) {
+	_, stop, waitExit := p.startLogReader(confDir, logDir, monitorPort)
+	return stop, waitExit
+}
+
+func (p *ProcessEnv) startLogReader(confDir, logDir string, monitorPort int) (int, func(), func(time.Duration) (bool, int)) {
 	t := p.t
 	t.Helper()
-
-	monitorPort := freePort(t)
 
 	cmd := exec.Command(p.binPath,
 		"-c", confDir,
@@ -111,25 +132,43 @@ func (p *ProcessEnv) StartLogReader(confDir, logDir string) (int, func()) {
 		t.Fatalf("start log-reader failed: %v", err)
 	}
 
+	done := make(chan struct{})
+	var waitErr error
+	go func() {
+		waitErr = cmd.Wait()
+		close(done)
+	}()
+
 	stop := func() {
 		if cmd.Process != nil {
 			cmd.Process.Signal(os.Interrupt)
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
-			done := make(chan error, 1)
-			go func() { done <- cmd.Wait() }()
 			select {
 			case <-done:
 			case <-ctx.Done():
 				cmd.Process.Kill()
-				cmd.Wait()
+				<-done
 			}
+		}
+	}
+
+	waitExit := func(timeout time.Duration) (bool, int) {
+		select {
+		case <-done:
+			code := -1
+			if exitErr, ok := waitErr.(*exec.ExitError); ok {
+				code = exitErr.ExitCode()
+			}
+			return true, code
+		case <-time.After(timeout):
+			return false, -1
 		}
 	}
 
 	// Wait briefly for the process to start listening.
 	time.Sleep(500 * time.Millisecond)
-	return monitorPort, stop
+	return monitorPort, stop, waitExit
 }
 
 // BuildPblogTool compiles the bfe-pblog-tool binary and caches it alongside log-reader.
@@ -269,7 +308,8 @@ func goosBinSuffix() string {
 	return ""
 }
 
-func freePort(t *testing.T) int {
+// FreePort returns an unused localhost TCP port.
+func FreePort(t *testing.T) int {
 	t.Helper()
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
@@ -277,4 +317,8 @@ func freePort(t *testing.T) int {
 	}
 	defer ln.Close()
 	return ln.Addr().(*net.TCPAddr).Port
+}
+
+func freePort(t *testing.T) int {
+	return FreePort(t)
 }

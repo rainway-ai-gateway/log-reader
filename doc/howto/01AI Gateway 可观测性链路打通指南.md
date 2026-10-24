@@ -365,7 +365,7 @@ Doris 采用**明细表 + 聚合表**双层模型：
 
 | 表 | 模型 | 用途 |
 |----|------|------|
-| `bfe_ai_request_log` | UNIQUE KEY | 明细日志存储、分位数计算、日志回溯 |
+| `bfe_ai_request_log` | UNIQUE KEY | 明细日志存储、分位数计算、日志回溯。**注意**：Doris 侧唯一键目前仍是四元组 `(hostid, log_time, ai_apikey_id, ai_requested_model)`，而 MySQL 侧（轻量形态）自 bfenetworks/bfe#1417 起为五元组（多 `logid`）——Doris 侧同缺陷待同改 |
 | `bfe_ai_metrics_1m` | AGGREGATE KEY | 分钟级预聚合指标 |
 
 > **⚠️ 注意**：`bfe_ai_metrics_1m` 仅为演示用的聚合表，详见 [第 6 节](#6-重要提示关于聚合表设计)。
