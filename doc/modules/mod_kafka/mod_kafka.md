@@ -29,7 +29,7 @@
 | 响应信息字段 | `res_status_code`、`res_header_len`、`res_body_len`、`res_content_type`、`res_location`、`res_transfer_encoding` |
 | 响应头列表 | `res_headers` |
 | 时间信息字段 | `all_time`、`read_client_time`、`cluster_serve_time`、`backend_serve_time`、`write_client_time`、`session_offset_time`、`connect_backend_time`、`proxy_delay_time` |
-| AI 可观测字段 | `ai_apikey_id`、`ai_apikeytags`、`ai_requested_model`、`ai_target_model`、`ai_stream`、`ai_input_tokens`、`ai_output_tokens`、`ai_total_tokens`、`ai_ttft_us`、`ai_tpot_us`、`ai_rate_limit_hits`、`ai_auth_reject_reason`、`ai_auth_reject_quota_plans`、`ai_provider`、`ai_retry_count`、`ai_cost_value`、`ai_cost_currency`、`ai_route_rule_hits`、`ai_cluster_key_names`、`ai_auth_hit_quota_plans` |
+| AI 可观测字段 | `ai_apikey_id`、`ai_apikeytags`、`ai_requested_model`、`ai_target_model`、`ai_stream`、`ai_input_tokens`、`ai_output_tokens`、`ai_total_tokens`、`ai_ttft_us`、`ai_tpot_us`、`ai_rate_limit_hits`、`ai_auth_reject_reason`、`ai_auth_reject_quota_plans`、`ai_provider`、`ai_retry_count`、`ai_cost_value`、`ai_cost_currency`、`ai_price_miss`、`ai_price_warn`、`ai_route_rule_hits`、`ai_cluster_key_names`、`ai_auth_hit_quota_plans` |
 | 地址信息字段 | `bfe_ip`、`sock_src_ip`、`is_trust_src_ip`、`vip`、`vip6` |
 
 字段输出模式、配置示例及监控指标详见 [mod_kafka.conf](../../configuration/mod_kafka/mod_kafka.conf.md) 与 [kafka_config.data](../../configuration/mod_kafka/kafka_config.data.md)。

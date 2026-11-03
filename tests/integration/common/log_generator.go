@@ -72,11 +72,11 @@ func (g *LogGenerator) MustWriteBfeLog(t *testing.T, log *bfe_access_pb.BfeLog) 
 // deterministic so integration tests can verify the JSON conversion field by field.
 func MakeRequestLog(logid uint64, product bfe_access_pb.ProductID, host, uri, model string) *bfe_access_pb.BfeLog {
 	logType := bfe_access_pb.BfeLogType_Request
-	clientIP := uint32(0x0A000001)   // 10.0.0.1
-	bfeIP := uint32(0x0A000064)      // 10.0.0.100
-	sockSrcIP := uint32(0x0A000001)  // 10.0.0.1
-	vip := uint32(0xC0A80101)        // 192.168.1.1
-	backendIP := uint32(0x0A0000C8)  // 10.0.0.200
+	clientIP := uint32(0x0A000001)  // 10.0.0.1
+	bfeIP := uint32(0x0A000064)     // 10.0.0.100
+	sockSrcIP := uint32(0x0A000001) // 10.0.0.1
+	vip := uint32(0xC0A80101)       // 192.168.1.1
+	backendIP := uint32(0x0A0000C8) // 10.0.0.200
 	isTrustSrcIP := true
 	clientNetwork := bfe_access_pb.NetType_Ipv4
 	return &bfe_access_pb.BfeLog{
@@ -153,26 +153,26 @@ func MakeRequestLog(logid uint64, product bfe_access_pb.ProductID, host, uri, mo
 			ProxyDelayTime:     uint32Ptr(3),
 
 			// AI observability fields.
-			AiApikeyId:       strPtr("key-id-123"),
+			AiApikeyId: strPtr("key-id-123"),
 			AiApikeytags: []*bfe_access_pb.ApikeyTag{
 				{Tagname: strPtr("dep"), Tagvalue: strPtr("ops"), Taglevel: int32Ptr(1)},
 				{Tagname: strPtr("team"), Tagvalue: strPtr("bfe"), Taglevel: int32Ptr(2)},
 			},
-			AiRequestedModel: strPtr(model),
-			AiTargetModel:    strPtr(model + "-mapped"),
-			AiStream:         boolPtr(true),
-			AiInputTokens:    int64Ptr(1000),
-			AiOutputTokens:   int64Ptr(200),
-			AiTotalTokens:        int64Ptr(1200),
-			AiCacheReadTokens:    int64Ptr(500),
-			AiCacheWriteTokens:   int64Ptr(100),
-			AiAudioInputTokens:   int64Ptr(80),
-			AiAudioOutputTokens:  int64Ptr(20),
-			AiImageCount:         int64Ptr(1),
-			AiImageInputTokens:   int64Ptr(200),
-			AiVideoCount:         int64Ptr(3),
-			AiTtftUs:             int64Ptr(50000),
-			AiTpotUs:         int64Ptr(2500),
+			AiRequestedModel:    strPtr(model),
+			AiTargetModel:       strPtr(model + "-mapped"),
+			AiStream:            boolPtr(true),
+			AiInputTokens:       int64Ptr(1000),
+			AiOutputTokens:      int64Ptr(200),
+			AiTotalTokens:       int64Ptr(1200),
+			AiCacheReadTokens:   int64Ptr(500),
+			AiCacheWriteTokens:  int64Ptr(100),
+			AiAudioInputTokens:  int64Ptr(80),
+			AiAudioOutputTokens: int64Ptr(20),
+			AiImageCount:        int64Ptr(1),
+			AiImageInputTokens:  int64Ptr(200),
+			AiVideoCount:        int64Ptr(3),
+			AiTtftUs:            int64Ptr(50000),
+			AiTpotUs:            int64Ptr(2500),
 			AiRateLimitHits: []*bfe_access_pb.RateLimitHit{
 				{
 					RateLimitPolicyId: strPtr("rlp-0001"),
@@ -180,16 +180,18 @@ func MakeRequestLog(logid uint64, product bfe_access_pb.ProductID, host, uri, mo
 					RuleNames:         []string{"win1m", "win5m"},
 				},
 			},
-			AiAuthRejectReason:       strPtr("quota_exceeded"),
-			AiAuthRejectQuotaPlans:   []string{"plan-A", "plan-B"},
+			AiAuthRejectReason:     strPtr("quota_exceeded"),
+			AiAuthRejectQuotaPlans: []string{"plan-A", "plan-B"},
 
 			// AI observability new fields (v0.2.0).
-			AiProvider:      strPtr("openai"),
-			AiProtocol:      strPtr("openai"),
-			AiMode:          strPtr("chat"),
-			AiRetryCount:    uint32Ptr(1),
-			AiCostValue:     int64Ptr(5000),
-			AiCostCurrency:  strPtr("USD"),
+			AiProvider:     strPtr("openai"),
+			AiProtocol:     strPtr("openai"),
+			AiMode:         strPtr("chat"),
+			AiRetryCount:   uint32Ptr(1),
+			AiCostValue:    int64Ptr(5000),
+			AiCostCurrency: strPtr("USD"),
+			AiPriceMiss:    boolPtr(true),
+			AiPriceWarn:    strPtr("fallback"),
 			AiRouteRuleHits: []*bfe_access_pb.AIRouteRuleHit{
 				{
 					RuleOwner:     strPtr("ak_user_a"),

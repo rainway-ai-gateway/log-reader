@@ -378,6 +378,8 @@ func TestLR01_BasicFlow(t *testing.T) {
 		assertFieldEquals(t, payload, "ai_retry_count", float64(1))
 		assertFieldEquals(t, payload, "ai_cost_value", float64(5000))
 		assertFieldEquals(t, payload, "ai_cost_currency", "USD")
+		assertFieldEquals(t, payload, "ai_price_miss", true)
+		assertFieldEquals(t, payload, "ai_price_warn", "fallback")
 		assertFieldObjectArrayEquals(t, payload, "ai_route_rule_hits", []map[string]interface{}{
 			{
 				"rule_owner":      "ak_user_a",
@@ -497,6 +499,7 @@ func TestLR01_DefaultFieldMode(t *testing.T) {
 		"proto", "header_host", "origin_uri", "method",
 		"res_status_code", "res_header_len", "res_body_len",
 		"all_time", "read_client_time", "cluster_serve_time", "backend_serve_time", "write_client_time",
+		"ai_price_miss", "ai_price_warn",
 	}
 	// Aligned with mod_log_mysql write columns (2026-10-01): these 18 fields
 	// were promoted from non-default to the default set.
@@ -581,6 +584,7 @@ func TestLR01_AllFieldMode(t *testing.T) {
 		"referrer", "user_agent", "delegation", "uid", "cookie", "req_headers",
 		"res_location", "res_transfer_encoding", "res_headers",
 		"session_offset_time", "bfe_ip", "sock_src_ip", "vip",
+		"ai_price_miss", "ai_price_warn",
 	}
 	for _, f := range expectedFields {
 		if _, ok := payload[f]; !ok {
@@ -628,6 +632,8 @@ func TestLR01_RequireFieldMode(t *testing.T) {
 	assertFieldAbsent(t, payload, "log_tag")
 	assertFieldAbsent(t, payload, "bfe_ip")
 	assertFieldAbsent(t, payload, "vip")
+	assertFieldAbsent(t, payload, "ai_price_miss")
+	assertFieldAbsent(t, payload, "ai_price_warn")
 }
 
 func TestLR01_JSONStructureIsStable(t *testing.T) {
