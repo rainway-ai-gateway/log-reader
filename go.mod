@@ -7,8 +7,8 @@ toolchain go1.22.9
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/bfenetworks/bfe v1.8.6
-	github.com/bfenetworks/bfe-access-pb v0.3.9
-	github.com/bfenetworks/go-lib v0.0.3
+	github.com/bfenetworks/bfe-access-pb v0.3.17
+	github.com/bfenetworks/go-lib v0.0.4
 	github.com/docker/docker v27.1.1+incompatible
 	github.com/go-sql-driver/mysql v1.9.0
 	github.com/segmentio/kafka-go v0.4.47

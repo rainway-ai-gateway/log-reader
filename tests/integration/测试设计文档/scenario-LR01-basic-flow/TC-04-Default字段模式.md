@@ -54,7 +54,7 @@ LR01 基本流程与 JSON 转换正确性
 ## 预期结果
 
 - `MockKafka` 收到 1 条消息。
-- 消息包含默认字段集（92 个注册字段，与 mod_log_mysql 写入列对齐）中的常用字段，例如：
+- 消息包含默认字段集（94 个注册字段；ai_price_miss/ai_price_warn 仅由 Kafka 输出，其余与 mod_log_mysql 写入列对齐）中的常用字段，例如：
   - 必需字段：`logid`、`timestamp`、`product`、`hostid`、`client_ip`、`err_code` 等；
   - 默认字段：`header_host`、`origin_uri`、`method`、`res_status_code`、`ai_requested_model`、`ai_target_model`、`ai_apikey_id`、`ai_input_tokens`、`ai_provider` 等。
 - 对齐改造（2026-10-01）后由 non-default 纳入 Default 集的 18 个字段也被输出：`log_tag`、`client_network`、`req_num`、`session_id`、`referrer`、`user_agent`、`delegation`、`uid`、`cookie`、`req_headers`、`res_location`、`res_transfer_encoding`、`res_headers`、`session_offset_time`、`bfe_ip`、`sock_src_ip`、`vip`、`vip6`。

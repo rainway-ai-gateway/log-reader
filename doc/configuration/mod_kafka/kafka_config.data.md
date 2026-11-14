@@ -152,6 +152,8 @@
 | ai_mode | string | AI 请求模式，如 `chat`、`image_generation` 等 | N | Y |
 | ai_cost_value | int64 | 成本固定点整数值 | N | Y |
 | ai_cost_currency | string | 成本币种 | N | Y |
+| ai_price_miss | bool | 是否发生模型价格缺失 | N | Y |
+| ai_price_warn | string | 价格缺失处理形态（fallback/no_entry/reject） | N | Y |
 | ai_route_rule_hits | []object | AI 路由规则命中记录 | N | Y |
 | ai_cluster_key_names | []object | 尝试过的 cluster 与 key 名称组合 | N | Y |
 | ai_auth_hit_quota_plans | []string | 成功请求时命中的配额计划 | N | Y |

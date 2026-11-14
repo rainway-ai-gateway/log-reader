@@ -959,6 +959,24 @@ func registerAllFields() {
 		},
 		isZeroString,
 	)
+	registerField("ai_price_miss", "bool", false, true,
+		func(bfeLog *bfe_access_pb.BfeLog) interface{} {
+			if reqLog := bfeLog.GetRequestLog(); reqLog != nil {
+				return reqLog.GetAiPriceMiss()
+			}
+			return false
+		},
+		isZeroBool,
+	)
+	registerField("ai_price_warn", "string", false, true,
+		func(bfeLog *bfe_access_pb.BfeLog) interface{} {
+			if reqLog := bfeLog.GetRequestLog(); reqLog != nil {
+				return reqLog.GetAiPriceWarn()
+			}
+			return ""
+		},
+		isZeroString,
+	)
 	registerField("ai_route_rule_hits", "[]object", false, true,
 		func(bfeLog *bfe_access_pb.BfeLog) interface{} {
 			if reqLog := bfeLog.GetRequestLog(); reqLog != nil {

@@ -157,6 +157,8 @@
 | `ai_mode` | string | ❌ | ✅ | AI 请求模式，如 `chat`、`image_generation`、`embedding`、`audio_speech` 等 |
 | `ai_cost_value` | int64 | ❌ | ✅ | 成本固定点整数值 |
 | `ai_cost_currency` | string | ❌ | ✅ | 成本币种 |
+| `ai_price_miss` | bool | ❌ | ✅ | 本次请求是否发生模型价格缺失；与 `ai_price_warn` 配合用于对账 |
+| `ai_price_warn` | string | ❌ | ✅ | 价格缺失处理形态：`fallback`/`no_entry`/`reject` |
 | `ai_route_rule_hits` | []object | ❌ | ✅ | AI 路由规则命中记录 |
 | `ai_cluster_key_names` | []object | ❌ | ✅ | 尝试过的 cluster 与 key 名称组合 |
 | `ai_auth_hit_quota_plans` | []string | ❌ | ✅ | 成功请求时命中的配额计划名称列表 |
@@ -197,12 +199,13 @@
 | 响应信息 | 6 | 3 | 6 |
 | 响应头列表 | 1 | 0 | 1 |
 | 时间信息 | 8 | 6 | 8 |
-| AI 可观测 | 39 | 0 | 39 |
+| AI 可观测 | 41 | 0 | 41 |
 | 地址信息 | 5 | 0 | 5 |
-| **总计** | **92** | **22** | **92** |
+| **总计** | **94** | **22** | **94** |
 
-> Default 集 = 全部注册字段（2026-10-01 起）：`FieldMode=default` 的输出字段集与
-> `mod_log_mysql` 的写入字段集（派生列除外）完全对齐，见
+> Default 集 = 全部注册字段（2026-10-01 起）。`ai_price_miss` / `ai_price_warn`
+> 目前仅由 `mod_kafka` 输出，`mod_log_mysql` 的列集尚未包含这两列。其余字段与
+> `mod_log_mysql` 的写入字段集（派生列除外）对齐，见
 > `doc/modifications/2026-10-01-align-mod-kafka-output-with-mod-log-mysql/`。
 > 需要裁剪体积的部署可用 `customized` / `require` 模式。
 

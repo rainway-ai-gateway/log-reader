@@ -10,6 +10,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [v1.6.0] - 2026-11-14
+
+### Added
+- Register `ai_price_miss` / `ai_price_warn` from `bfe-access-pb v0.3.17`: model-price-miss requests now keep these fields in `mod_kafka` JSON output instead of silently dropping them. The default field count grows from 92 to 94; the sample `mod_kafka` config and output-field docs are updated. `mod_log_mysql` does not yet persist these two columns.
+
 ## [v1.5.0] - 2026-10-24
 
 ### Changed
@@ -85,6 +92,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Config loading system (`reader_conf`) with support for basic and access-pb config types.
 - Built-in Kafka output module (`mod_kafka`) for forwarding parsed access logs to Kafka.
 
+[Unreleased]: https://github.com/rainway-ai-gateway/log-reader/compare/v1.6.0...HEAD
+[v1.6.0]: https://github.com/rainway-ai-gateway/log-reader/compare/v1.5.0...v1.6.0
 [v1.5.0]: https://github.com/rainway-ai-gateway/log-reader/compare/v1.4.0...v1.5.0
 [v1.4.0]: https://github.com/rainway-ai-gateway/log-reader/compare/v1.3.0...v1.4.0
 [v1.3.0]: https://github.com/bfenetworks/log-reader/compare/v1.2.0...v1.3.0

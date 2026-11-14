@@ -65,18 +65,20 @@ func makeBfeLog() *bfe_access_pb.BfeLog {
 				{Tagname: strPtr("dep"), Tagvalue: strPtr("ops"), Taglevel: int32Ptr(1)},
 				{Tagname: strPtr("team"), Tagvalue: strPtr("bfe"), Taglevel: int32Ptr(2)},
 			},
-			AiRequestedModel:   strPtr("test-model"),
-			AiTargetModel:      strPtr("gpt-5"),
-			AiStream:           boolPtr(false),
-			AiInputTokens:      int64Ptr(34),
-			AiOutputTokens:     int64Ptr(182),
-			AiTotalTokens:      int64Ptr(216),
-			AiTtftUs:           int64Ptr(5486),
-			AiTpotUs:           int64Ptr(3),
-			AiProvider:         strPtr("openai"),
-			AiRetryCount:       uint32Ptr(1),
-			AiCostValue:        int64Ptr(5000),
-			AiCostCurrency:     strPtr("USD"),
+			AiRequestedModel: strPtr("test-model"),
+			AiTargetModel:    strPtr("gpt-5"),
+			AiStream:         boolPtr(false),
+			AiInputTokens:    int64Ptr(34),
+			AiOutputTokens:   int64Ptr(182),
+			AiTotalTokens:    int64Ptr(216),
+			AiTtftUs:         int64Ptr(5486),
+			AiTpotUs:         int64Ptr(3),
+			AiProvider:       strPtr("openai"),
+			AiRetryCount:     uint32Ptr(1),
+			AiCostValue:      int64Ptr(5000),
+			AiCostCurrency:   strPtr("USD"),
+			AiPriceMiss:      boolPtr(true),
+			AiPriceWarn:      strPtr("fallback"),
 			AiRouteRuleHits: []*bfe_access_pb.AIRouteRuleHit{
 				{
 					RuleOwner:     strPtr("ak_user_a"),
@@ -118,8 +120,8 @@ func float64Ptr(v float64) *float64 {
 
 func TestFieldRegistry_DefaultFieldsCount(t *testing.T) {
 	def := DefaultFields()
-	if len(def) != 92 {
-		t.Fatalf("expected 92 default fields, got %d: %v", len(def), def)
+	if len(def) != 94 {
+		t.Fatalf("expected 94 default fields, got %d: %v", len(def), def)
 	}
 }
 
@@ -178,8 +180,8 @@ func TestFieldRegistry_RequiredFieldsCount(t *testing.T) {
 
 func TestFieldRegistry_AllFieldsCount(t *testing.T) {
 	all := AllFields()
-	if len(all) != 92 {
-		t.Fatalf("expected 92 fields, got %d", len(all))
+	if len(all) != 94 {
+		t.Fatalf("expected 94 fields, got %d", len(all))
 	}
 }
 
@@ -188,16 +190,16 @@ func TestFieldRegistry_AllFieldsCount(t *testing.T) {
 // with the expected type and Default membership.
 func TestFieldRegistry_CacheMirrorIntentFields(t *testing.T) {
 	want := map[string]string{
-		"ai_cache_status":           "string",
-		"ai_intent_question":        "string",
-		"ai_intent_answer":          "string",
-		"ai_intent_confidence":      "float64",
-		"ai_intent_source":          "string",
-		"ai_intent_latency_us":      "int64",
-		"ai_intent_cache_hit":       "bool",
+		"ai_cache_status":             "string",
+		"ai_intent_question":          "string",
+		"ai_intent_answer":            "string",
+		"ai_intent_confidence":        "float64",
+		"ai_intent_source":            "string",
+		"ai_intent_latency_us":        "int64",
+		"ai_intent_cache_hit":         "bool",
 		"ai_intent_questions_version": "string",
-		"mirror_hit":                "bool",
-		"mirror_cluster":            "string",
+		"mirror_hit":                  "bool",
+		"mirror_cluster":              "string",
 	}
 
 	defs := make(map[string]FieldDef)
@@ -283,6 +285,8 @@ func TestFieldRegistry_Extract(t *testing.T) {
 		{"ai_retry_count", uint32(1)},
 		{"ai_cost_value", int64(5000)},
 		{"ai_cost_currency", "USD"},
+		{"ai_price_miss", true},
+		{"ai_price_warn", "fallback"},
 	}
 
 	for _, tt := range tests {
